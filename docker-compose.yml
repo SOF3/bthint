@@ -1,0 +1,8 @@
+version: "2"
+services:
+  bot:
+    build: .
+    volumes:
+      - ./config.toml:/bot/config.toml
+      - ./data:/bot/data
+    restart: always
