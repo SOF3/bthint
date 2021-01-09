@@ -14,5 +14,5 @@ futures = "0.3.9"
 log = "0.4.12"
 pretty_env_logger = "0.4.0"
 serde = { version = "1.0.118", features = ["derive"] }
-serenity = "0.10.1"
+serenity = "0.10.2"
 tokio = {version = "1.0.1", features = ["full"]}
