@@ -1,11 +1,13 @@
 use std::future::Future;
 use std::pin::Pin;
+use std::time::{Duration, Instant};
 use std::process::Stdio;
 
 use anyhow::anyhow;
 use futures::future;
 use tokio::io::AsyncWriteExt;
 use tokio::process::Command;
+use tokio::time::timeout_at;
 
 use crate::Result;
 
@@ -14,7 +16,7 @@ type TestUnitResult = Result<Option<String>>;
 pub async fn verify_php(string: &str) -> Option<String> {
     let lines: Vec<_> = string.split('\n').collect();
     let mut blocks: Vec<Pin<Box<dyn Future<Output = TestUnitResult> + Send>>> = Vec::new();
-    for start in 0..(lines.len() - 5) {
+    for start in 0..(lines.len().saturating_sub(5)) {
         for end in ((start + 5)..lines.len()).rev() {
             for &class in &[false, true] {
                 let mut buf = if lines[start].starts_with("<?php") {
@@ -35,14 +37,16 @@ pub async fn verify_php(string: &str) -> Option<String> {
 
                 let lines = &lines;
                 let block = async move {
-                    log::debug!("Piping {} to php -l", &buf);
+                    log::debug!("Piping lines {}..{} {} to php -l", start, end, &buf);
                     let mut cmd = Command::new("php")
                         .arg("-l")
                         .stdin(Stdio::piped())
                         .stdout(Stdio::null())
                         .stderr(Stdio::null())
+                        // .kill_on_drop(true)
                         .spawn()?;
 
+                    log::debug!("Writing stdin");
                     {
                         let mut stdin = cmd
                             .stdin
@@ -66,8 +70,13 @@ pub async fn verify_php(string: &str) -> Option<String> {
         }
     }
 
+    let timeout = Instant::now() + Duration::from_secs(5);
     while !blocks.is_empty() {
-        let (resolve, _, rest) = future::select_all(blocks).await;
+        let all_futures = future::select_all(blocks);
+        let (resolve, _, rest) = match timeout_at(timeout.into(), all_futures).await {
+            Ok(select) => select,
+            Err(_) => return None,
+        };
         if let Ok(Some(resolve)) = resolve {
             return Some(resolve);
         }

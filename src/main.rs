@@ -41,6 +41,7 @@ struct DiscordConfig {
 }
 
 struct Handler {
+    client_id: u64,
     invite_link: String,
 }
 
@@ -52,11 +53,14 @@ impl TryFrom<Config> for Handler {
             discord: DiscordConfig { client_id, .. },
         } = config;
 
-        Ok(Self {
-            invite_link: format!(
+        let invite_link = format!(
                 "https://discord.com/oauth2/authorize?client_id={}&scope=bot",
                 client_id
-            ),
+            );
+        log::info!("Invite link: {}", &invite_link);
+        Ok(Self {
+            client_id,
+            invite_link,
         })
     }
 }
@@ -64,6 +68,9 @@ impl TryFrom<Config> for Handler {
 #[async_trait::async_trait]
 impl serenity::client::EventHandler for Handler {
     async fn message(&self, ctx: Context, message: channel::Message) {
+        if message.author.id == self.client_id {
+            return;
+        }
         if &message.content == "bthint invite" {
             let reply = format!("Invite link: {}", &self.invite_link);
             if let Err(err) = message.reply(&ctx, reply).await {
@@ -71,7 +78,7 @@ impl serenity::client::EventHandler for Handler {
             }
         } else if let Some((lang, code)) = detect_lang(&message.content).await {
             let reply = format!(
-                r#"Hint: use three backticks \\`\\`\\` to wrap your code so that it looks like this:
+                r#"Hint: use three backticks \`\`\` to wrap your code so that it looks like this:
 ```{}
 {}
 ```"#,
