@@ -54,9 +54,9 @@ impl TryFrom<Config> for Handler {
         } = config;
 
         let invite_link = format!(
-                "https://discord.com/oauth2/authorize?client_id={}&scope=bot",
-                client_id
-            );
+            "https://discord.com/oauth2/authorize?client_id={}&scope=bot",
+            client_id
+        );
         log::info!("Invite link: {}", &invite_link);
         Ok(Self {
             client_id,
