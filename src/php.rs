@@ -1,7 +1,7 @@
 use std::future::Future;
 use std::pin::Pin;
-use std::time::{Duration, Instant};
 use std::process::Stdio;
+use std::time::{Duration, Instant};
 
 use anyhow::anyhow;
 use futures::future;

@@ -54,9 +54,9 @@ impl TryFrom<Config> for Handler {
         } = config;
 
         let invite_link = format!(
-                "https://discord.com/oauth2/authorize?client_id={}&scope=bot",
-                client_id
-            );
+            "https://discord.com/oauth2/authorize?client_id={}&scope=bot",
+            client_id
+        );
         log::info!("Invite link: {}", &invite_link);
         Ok(Self {
             client_id,
@@ -76,16 +76,18 @@ impl serenity::client::EventHandler for Handler {
             if let Err(err) = message.reply(&ctx, reply).await {
                 log::error!("Error replying to discord: {}", err);
             }
-        } else if let Some((lang, code)) = detect_lang(&message.content).await {
-            let reply = format!(
-                r#"Hint: use three backticks \`\`\` to wrap your code so that it looks like this:
+        } else if !message.content.contains("```") {
+            if let Some((lang, code)) = detect_lang(&message.content).await {
+                let reply = format!(
+                    r#"Hint: use three backticks \`\`\` to wrap your code so that it looks like this:
 ```{}
 {}
 ```"#,
-                lang, code
-            );
-            if let Err(err) = message.reply(&ctx, reply).await {
-                log::error!("Error replying to discord: {}", err);
+                    lang, code
+                );
+                if let Err(err) = message.reply(&ctx, reply).await {
+                    log::error!("Error replying to discord: {}", err);
+                }
             }
         }
     }
