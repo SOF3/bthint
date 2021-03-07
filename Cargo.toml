@@ -8,7 +8,7 @@ description = "Discord bot to remind users to use backticks"
 
 [dependencies]
 anyhow = "1.0.38"
-async-trait = "0.1.46"
+async-trait = "0.1.47"
 config = "0.10.1"
 futures = "0.3.13"
 log = "0.4.14"
