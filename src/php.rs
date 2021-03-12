@@ -15,9 +15,9 @@ type TestUnitResult = Result<Option<String>>;
 
 pub async fn verify_php(string: &str) -> Option<String> {
     let lines: Vec<_> = string.split('\n').collect();
-    let mut blocks: Vec<Pin<Box<dyn Future<Output = TestUnitResult> + Send>>> = Vec::new();
     for start in 0..(lines.len().saturating_sub(5)) {
         for end in ((start + 5)..lines.len()).rev() {
+            let mut blocks: Vec<Pin<Box<dyn Future<Output = TestUnitResult> + Send>>> = Vec::new();
             for &class in &[false, true] {
                 let mut buf = if lines[start].starts_with("<?php") {
                     String::new()
@@ -43,7 +43,7 @@ pub async fn verify_php(string: &str) -> Option<String> {
                         .stdin(Stdio::piped())
                         .stdout(Stdio::null())
                         .stderr(Stdio::null())
-                        // .kill_on_drop(true)
+                        .kill_on_drop(true)
                         .spawn()?;
 
                     log::debug!("Writing stdin");
@@ -67,21 +67,21 @@ pub async fn verify_php(string: &str) -> Option<String> {
                 blocks
                     .push(Box::pin(block) as Pin<Box<dyn Future<Output = TestUnitResult> + Send>>);
             }
+            let timeout = Instant::now() + Duration::from_secs(5);
+            while !blocks.is_empty() {
+                let all_futures = future::select_all(blocks);
+                let (resolve, _, rest) = match timeout_at(timeout.into(), all_futures).await {
+                    Ok(select) => select,
+                    Err(_) => return None,
+                };
+                if let Ok(Some(resolve)) = resolve {
+                    return Some(resolve);
+                }
+                blocks = rest;
+            }
         }
     }
 
-    let timeout = Instant::now() + Duration::from_secs(5);
-    while !blocks.is_empty() {
-        let all_futures = future::select_all(blocks);
-        let (resolve, _, rest) = match timeout_at(timeout.into(), all_futures).await {
-            Ok(select) => select,
-            Err(_) => return None,
-        };
-        if let Ok(Some(resolve)) = resolve {
-            return Some(resolve);
-        }
-        blocks = rest;
-    }
     None
 }
 
