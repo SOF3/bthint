@@ -1,8 +1,10 @@
-version: "2"
+version: "2.2"
 services:
   bot:
     build: .
     volumes:
       - ./config.toml:/bot/config.toml
       - ./data:/bot/data
+    cpus: 1.0
+    mem_limit: 268435456
     restart: always
