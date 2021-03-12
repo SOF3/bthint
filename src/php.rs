@@ -14,6 +14,10 @@ use crate::Result;
 type TestUnitResult = Result<Option<String>>;
 
 pub async fn verify_php(string: &str) -> Option<String> {
+    if !string.contains(|c| c == ';' || c == '$' || c == '{') {
+        return None;
+    }
+
     let lines: Vec<_> = string.split('\n').collect();
     for start in 0..(lines.len().saturating_sub(5)) {
         for end in ((start + 5)..lines.len()).rev() {
