@@ -37,11 +37,13 @@ struct Config {
 #[derive(Deserialize)]
 struct DiscordConfig {
     client_id: u64,
+    target_guild: u64,
     token: String,
 }
 
 struct Handler {
     client_id: u64,
+    target_guild: u64,
     invite_link: String,
 }
 
@@ -50,7 +52,7 @@ impl TryFrom<Config> for Handler {
 
     fn try_from(config: Config) -> Result<Self> {
         let Config {
-            discord: DiscordConfig { client_id, .. },
+            discord: DiscordConfig { client_id, target_guild, .. },
         } = config;
 
         let invite_link = format!(
@@ -60,6 +62,7 @@ impl TryFrom<Config> for Handler {
         log::info!("Invite link: {}", &invite_link);
         Ok(Self {
             client_id,
+            target_guild,
             invite_link,
         })
     }
@@ -68,6 +71,11 @@ impl TryFrom<Config> for Handler {
 #[async_trait::async_trait]
 impl serenity::client::EventHandler for Handler {
     async fn message(&self, ctx: Context, message: channel::Message) {
+        if let Some(guild) = message.guild_id {
+            if guild != self.target_guild {
+                return;
+            }
+        }
         if message.author.id == self.client_id {
             return;
         }
