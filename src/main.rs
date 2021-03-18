@@ -52,7 +52,12 @@ impl TryFrom<Config> for Handler {
 
     fn try_from(config: Config) -> Result<Self> {
         let Config {
-            discord: DiscordConfig { client_id, target_guild, .. },
+            discord:
+                DiscordConfig {
+                    client_id,
+                    target_guild,
+                    ..
+                },
         } = config;
 
         let invite_link = format!(
