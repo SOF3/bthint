@@ -1,4 +1,4 @@
-FROM rust:1.45-alpine AS build
+FROM rust:1.53-alpine AS build
 
 RUN apk add --no-cache musl-dev
 
@@ -23,5 +23,5 @@ USER bthint
 WORKDIR /bot
 COPY --from=build /usr/src/app/target/release/bthint /usr/bin/bthint
 
-ENV RUST_LOG=info
+ENV RUST_LOG=bthint=info
 ENTRYPOINT ["bthint"]
