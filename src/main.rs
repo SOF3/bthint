@@ -93,14 +93,14 @@ impl serenity::client::EventHandler for Handler {
             if let Some((lang, code)) = detect_lang(&message.content).await {
                 let reply = format!(
                     r#"Hint: use three backticks \`\`\` to wrap your code.
-                    So this:
-                    \`\`\`{}
-                    {}
-                    \`\`\`
-                    Turns into this:
-                    ```{0}
-                    {1}
-                    ```"#,
+So this:
+\`\`\`{}
+{}
+\`\`\`
+Turns into this:
+```{0}
+{1}
+```"#,
                     lang, code
                 );
                 if let Err(err) = message.reply(&ctx, reply).await {
