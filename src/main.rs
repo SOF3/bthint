@@ -102,7 +102,9 @@ Turns into this:
 {1}
 ```"#,
                     lang,
-                    code.split('\n').max_by_key(|line| line.len()).expect("split() is nonempty"),
+                    code.split('\n')
+                        .max_by_key(|line| line.len())
+                        .expect("split() is nonempty"),
                 );
                 if let Err(err) = message.reply(&ctx, reply).await {
                     log::error!("Error replying to discord: {}", err);
