@@ -24,9 +24,10 @@ async fn main() -> Result<()> {
 }
 
 fn load_config() -> Result<Config> {
-    let mut config = config::Config::new();
-    config.merge(config::File::with_name("config"))?;
-    config.try_into().map_err(Into::into)
+    let config = config::Config::builder()
+        .add_source(config::File::with_name("config"))
+        .build()?;
+    Ok(config.try_deserialize()?)
 }
 
 #[derive(Deserialize)]
