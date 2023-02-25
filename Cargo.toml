@@ -10,7 +10,7 @@ description = "Discord bot to remind users to use backticks"
 anyhow = "1.0.69"
 async-trait = "0.1.48"
 config = "0.13.3"
-futures = "0.3.25"
+futures = "0.3.26"
 log = "0.4.17"
 pretty_env_logger = "0.4.0"
 serde = { version = "1.0.152", features = ["derive"] }
