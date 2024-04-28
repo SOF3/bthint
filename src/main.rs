@@ -92,20 +92,26 @@ impl serenity::client::EventHandler for Handler {
             }
         } else if !message.content.contains("```") {
             if let Some((lang, code)) = detect_lang(&message.content).await {
+                let max_line = code
+                    .split('\n')
+                    .max_by_key(|line| line.len())
+                    .expect("split() is nonempty");
                 let reply = format!(
                     r#"Hint: use three backticks \`\`\` to wrap your code.
 So this:
-\`\`\`{}
-{}
+\`\`\`{lang}
+{escaped}
 \`\`\`
 Turns into this:
-```{0}
-{1}
+```{lang}
+{unescaped}
 ```"#,
-                    lang,
-                    code.split('\n')
-                        .max_by_key(|line| line.len())
-                        .expect("split() is nonempty"),
+                    lang = lang,
+                    unescaped = max_line,
+                    escaped = max_line
+                        .replace("\\", "\\\\")
+                        .replace("*", "\\*")
+                        .replace("_", "\\_"),
                 );
                 if let Err(err) = message.reply(&ctx, reply).await {
                     log::error!("Error replying to discord: {}", err);
