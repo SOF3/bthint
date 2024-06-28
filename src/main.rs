@@ -97,7 +97,7 @@ impl serenity::client::EventHandler for Handler {
                     .max_by_key(|line| line.len())
                     .expect("split() is nonempty");
                 let reply = format!(
-                    r#"Hint: use three backticks \`\`\` to wrap your code.
+                    r#"Hint: use three backticks \`\`\`{lang} to wrap your code.
 So this:
 \`\`\`{lang}
 {escaped}
