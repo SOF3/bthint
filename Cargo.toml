@@ -7,7 +7,7 @@ license = "AGPL-3.0"
 description = "Discord bot to remind users to use backticks"
 
 [dependencies]
-anyhow = "1.0.98"
+anyhow = "1.0.99"
 async-trait = "0.1.48"
 config = "0.15.14"
 futures = "0.3.31"
